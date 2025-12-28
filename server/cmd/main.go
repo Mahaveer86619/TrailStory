@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/charmbracelet/log"
+)
 
 func main() {
-	fmt.Println("TrailStory starts...")
+	log.Info("TrailStory starts...")
 }
