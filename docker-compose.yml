@@ -1,0 +1,42 @@
+services:
+  server:
+    container_name: server
+    build:
+      context: ./server
+    env_file:
+      - ./server/.env
+    ports:
+      - "7000:7000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - trailstory-network
+    volumes:
+      - ./server/uploads:/app/uploads
+
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: trailstory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - trailstory-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  trailstory-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
