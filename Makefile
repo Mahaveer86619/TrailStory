@@ -4,6 +4,8 @@
 clean:
 	@echo "Cleaning containers and volumes..."
 	docker compose down -v
+	@echo "Cleaning localstack and uploaded media..."
+	docker run --rm -v $(PWD):/app -w /app alpine rm -rf localstack server/uploads
 
 # Standard build and start
 start:

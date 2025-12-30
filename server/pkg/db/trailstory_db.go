@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Mahaveer86619/TrailStory/pkg/config"
+	"github.com/Mahaveer86619/TrailStory/pkg/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -45,7 +46,8 @@ func GetTrailStoryDB() *TrailStoryDB {
 
 func (tsdb *TrailStoryDB) MigrateTables() {
 	err := tsdb.DB.AutoMigrate(
-	// &models.User{},
+		&models.User{},
+		&models.Following{},
 	)
 
 	if err != nil {

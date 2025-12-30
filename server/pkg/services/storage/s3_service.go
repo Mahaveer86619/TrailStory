@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 type S3Storage struct {
@@ -44,11 +45,12 @@ func NewS3Storage(cfg *config.Config) *S3Storage {
 }
 
 func (s *S3Storage) Init() error {
-	// Check if bucket exists
+	// 1. Check if bucket exists
 	_, err := s.client.HeadBucket(context.TODO(), &s3.HeadBucketInput{
 		Bucket: aws.String(s.bucket),
 	})
 
+	// 2. Create if missing
 	if err != nil {
 		fmt.Printf("Bucket %s not found, attempting to create...\n", s.bucket)
 		_, err = s.client.CreateBucket(context.TODO(), &s3.CreateBucketInput{
@@ -58,6 +60,27 @@ func (s *S3Storage) Init() error {
 			return fmt.Errorf("failed to auto-create bucket: %w", err)
 		}
 		fmt.Printf("Bucket %s created successfully.\n", s.bucket)
+	}
+
+	// 3. Apply CORS Policy (Fixes the browser image loading error)
+	fmt.Printf("Applying CORS policy to bucket %s...\n", s.bucket)
+	_, err = s.client.PutBucketCors(context.TODO(), &s3.PutBucketCorsInput{
+		Bucket: aws.String(s.bucket),
+		CORSConfiguration: &types.CORSConfiguration{
+			CORSRules: []types.CORSRule{
+				{
+					AllowedHeaders: []string{"*"},
+					AllowedMethods: []string{"GET", "PUT", "POST", "DELETE", "HEAD"},
+					AllowedOrigins: []string{"*"}, // Allow all origins (localhost, etc.)
+					ExposeHeaders:  []string{"ETag"},
+					MaxAgeSeconds:  aws.Int32(3000),
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		return fmt.Errorf("failed to apply CORS policy: %w", err)
 	}
 
 	return nil
@@ -90,10 +113,20 @@ func (s *S3Storage) SaveMedia(
 	return key, nil
 }
 
+func (s *S3Storage) SaveProfilePic(userID string, filename string, file io.Reader) (string, error) {
+	key := fmt.Sprintf("users/%s/profile_%s", userID, filename)
+	_, err := s.client.PutObject(context.TODO(), &s3.PutObjectInput{
+		Bucket: &s.bucket,
+		Key:    &key,
+		Body:   file,
+	})
+	return key, err
+}
+
 func (s *S3Storage) GetPublicURL(storageKey string) string {
 	return fmt.Sprintf(
 		"%s/%s/%s",
-		config.AppConfig.S3_ENDPOINT,
+		config.AppConfig.S3_PUBLIC_URL,
 		s.bucket,
 		storageKey,
 	)

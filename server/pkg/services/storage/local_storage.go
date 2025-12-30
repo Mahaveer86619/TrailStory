@@ -70,6 +70,23 @@ func (s *LocalStorage) SaveMedia(
 	return storageKey, nil
 }
 
+func (s *LocalStorage) SaveProfilePic(userID string, filename string, file io.Reader) (string, error) {
+	dir := filepath.Join(s.basePath, "users", userID)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return "", err
+	}
+	dstPath := filepath.Join(dir, filename)
+	out, err := os.Create(dstPath)
+	if err != nil {
+		return "", err
+	}
+	defer out.Close()
+	if _, err := io.Copy(out, file); err != nil {
+		return "", err
+	}
+	return filepath.Rel(s.basePath, dstPath)
+}
+
 func (s *LocalStorage) GetPublicURL(storageKey string) string {
 	// For local dev, this might be served via a static handler
 	return fmt.Sprintf("/static/%s", storageKey)

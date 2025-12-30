@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrailStory Client</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="brand">TrailStory <span>Dev</span></div>
+            <div id="user-display" class="hidden">
+                <span id="username">Guest</span>
+                <button onclick="logout()" class="btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <main id="auth-view">
+            <div class="auth-container">
+                <div class="card">
+                    <h2>Login</h2>
+                    <form onsubmit="handleLogin(event)">
+                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <button type="submit">Log In</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Register</h2>
+                    <form onsubmit="handleRegister(event)">
+                        <input type="text" name="display_name" placeholder="Display Name" required>
+                        <input type="email" name="email" placeholder="Email" required>
+                        <input type="password" name="password" placeholder="Password" required>
+                        <button type="submit" class="btn-outline">Sign Up</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+
+        <main id="dashboard-view" class="hidden">
+            <div class="grid">
+                <div class="col">
+                    <div class="card">
+                        <h3>My Profile</h3>
+                        <div class="profile-header">
+                            <img id="avatar-img" src="" alt="Avatar" class="avatar">
+                            <div>
+                                <h4 id="profile-name">Name</h4>
+                                <small id="profile-email">email@test.com</small>
+                            </div>
+                        </div>
+                        <form onsubmit="handleUpdateProfile(event)" class="mt-4">
+                            <input type="text" id="edit-name" placeholder="New Display Name">
+                            <button type="submit">Update Info</button>
+                        </form>
+                        <form onsubmit="handleAvatarUpload(event)" class="mt-2">
+                            <label class="file-upload">
+                                <input type="file" name="image" accept="image/*">
+                                <span>Change Avatar</span>
+                            </label>
+                            <button type="submit">Upload</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-2">
+                    <div class="card">
+                        <div class="flex-between">
+                            <h3>Community</h3>
+                            <button onclick="fetchAllUsers()" class="btn-sm">Refresh</button>
+                        </div>
+                        <div id="user-list" class="list-group">
+                            </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <h3>My Followers</h3>
+                        <div id="follower-list" class="list-group">
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <div id="status-bar">Ready</div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

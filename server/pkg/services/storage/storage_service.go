@@ -15,6 +15,8 @@ type StorageService interface {
 		filename string,
 		file io.Reader,
 	) (string, error)
+
+	SaveProfilePic(userID string, filename string, file io.Reader) (string, error)
 	
 	GetPublicURL(storageKey string) string
 

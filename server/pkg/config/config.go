@@ -26,6 +26,7 @@ type Config struct {
 	STORAGE_PATH   string
 
 	S3_ENDPOINT   string
+	S3_PUBLIC_URL string
 	S3_BUCKET     string
 	S3_REGION     string
 	S3_ACCESS_KEY string
@@ -56,6 +57,7 @@ func LoadConfig() {
 		STORAGE_PATH:   getEnv("STORAGE_PATH", "./uploads"),
 
 		S3_ENDPOINT:   getEnv("S3_ENDPOINT", ""),
+		S3_PUBLIC_URL: getEnv("S3_PUBLIC_URL", ""),
 		S3_BUCKET:     getEnv("S3_BUCKET", ""),
 		S3_REGION:     getEnv("S3_REGION", "us-east-1"),
 		S3_ACCESS_KEY: getEnv("S3_ACCESS_KEY", ""),
