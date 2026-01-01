@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.0
-	golang.org/x/crypto v0.31.0
+	golang.org/x/crypto v0.46.0
 )
 
 require (
@@ -23,15 +23,17 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	github.com/lib/pq v1.10.9 // indirect
+	github.com/paulmach/orb v0.12.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 )
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.6
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/joho/godotenv v1.5.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	gorm.io/driver/postgres v1.6.0

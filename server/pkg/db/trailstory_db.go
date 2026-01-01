@@ -5,10 +5,12 @@ import (
 	"log"
 
 	"github.com/Mahaveer86619/TrailStory/pkg/config"
-	"github.com/Mahaveer86619/TrailStory/pkg/models"
 
-	"gorm.io/driver/postgres"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/gorm"
+	gorm_postgres "gorm.io/driver/postgres"
 )
 
 type TrailStoryDB struct {
@@ -32,7 +34,7 @@ func InitTrailStoryDB(isLocal ...bool) {
 	)
 
 	var err error
-	trailStoryDB.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	trailStoryDB.DB, err = gorm.Open(gorm_postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
@@ -45,14 +47,26 @@ func GetTrailStoryDB() *TrailStoryDB {
 }
 
 func (tsdb *TrailStoryDB) MigrateTables() {
-	err := tsdb.DB.AutoMigrate(
-		&models.User{},
-		&models.Following{},
-	)
-
+	sqlDB, err := tsdb.DB.DB()
 	if err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+		log.Fatalf("Failed to extract sql.DB: %v", err)
 	}
 
-	log.Println("Database migration completed")
+	driver, err := postgres.WithInstance(sqlDB, &postgres.Config{})
+	if err != nil {
+		log.Fatalf("Failed to create migration driver: %v", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file:///app/trailstory_db/migrations",
+		"postgres", driver)
+	if err != nil {
+		log.Fatalf("Migration initialization failed: %v", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("Migration execution failed: %v", err)
+	}
+
+	log.Println("Database migration completed via golang-migrate")
 }

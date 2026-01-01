@@ -1,4 +1,4 @@
-.PHONY: clean start rebuild logs setup-s3
+.PHONY: clean start rebuild logs setup-s3 restart
 
 # Stops containers and removes volumes (clears DB and LocalStack data)
 clean:
@@ -10,11 +10,16 @@ clean:
 # Standard build and start
 start:
 	@echo "Starting TrailStory..."
-	docker compose up --build
+	docker compose up --build -d
 	@echo "Services are starting. Use 'make logs' to follow output."
 
 # Full reset: clean then start
 rebuild: clean start
+
+restart:
+	@echo "Restarting TrailStory..."
+	docker compose down
+	docker compose up --build -d
 
 # Follow logs from the server container
 logs:

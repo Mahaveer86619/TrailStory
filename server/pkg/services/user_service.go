@@ -28,7 +28,7 @@ func NewUserService(storage storage.StorageService) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(req views.RegisterRequest) (*views.UserView, error) {
+func (s *UserService) RegisterUser(req views.RegisterRequest) (*views.AuthResponse, error) {
 	var count int64
 	s.DB.Model(&models.User{}).Where("email = ?", req.Email).Count(&count)
 	if count > 0 {
@@ -50,8 +50,16 @@ func (s *UserService) RegisterUser(req views.RegisterRequest) (*views.UserView, 
 		return nil, errz.New(errz.InternalServerError, "Failed to create user", err)
 	}
 
-	view := views.ToUserView(&user, s.Storage)
-	return &view, nil
+	token, refresh, err := middleware.GenerateTokens(user.ID)
+	if err != nil {
+		return nil, errz.New(errz.InternalServerError, "Failed to generate session", err)
+	}
+
+	return &views.AuthResponse{
+		Token:        token,
+		RefreshToken: refresh,
+		User:         views.ToUserView(&user, s.Storage),
+	}, nil
 }
 
 func (s *UserService) LoginUser(req views.LoginRequest) (*views.AuthResponse, error) {

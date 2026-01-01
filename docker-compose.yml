@@ -1,4 +1,17 @@
 services:
+  # web:
+  #   build:
+  #     context: .
+  #     target: builder
+  #   ports:
+  #     - "5173:5173"
+  #   env_file:
+  #     - ./trailstory-client/.env
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #   command: npm run dev -- --host 0.0.0.0
+
   server:
     container_name: server
     build:
@@ -16,9 +29,10 @@ services:
       - trailstory-network
     volumes:
       - ./server/uploads:/app/uploads
+      - ./trailstory_db/migrations:/app/trailstory_db/migrations
 
   db:
-    image: postgres:latest
+    image: postgis/postgis:latest
     container_name: postgres_db
     environment:
       POSTGRES_USER: admin
@@ -28,6 +42,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./trailstory_db/init:/docker-entrypoint-initdb.d
+      - ./trailstory_db/migrations:/app/trailstory_db/migrations
     networks:
       - trailstory-network
     healthcheck:

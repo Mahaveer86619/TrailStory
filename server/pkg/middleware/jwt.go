@@ -105,6 +105,26 @@ func Middleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func OptionalAuth(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authHeader := r.Header.Get("Authorization")
+		if authHeader != "" {
+			tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+			claims := &Claims{}
+			token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+				return jwtKey, nil
+			})
+			if err == nil && token.Valid && claims.TokenType == "access" {
+				ctx := context.WithValue(r.Context(), userIDKey, claims.UserID)
+				next(w, r.WithContext(ctx))
+				return
+			}
+		}
+		// Continue without user ID if invalid/missing
+		next(w, r)
+	}
+}
+
 func GetUserID(r *http.Request) uint {
 	val := r.Context().Value(userIDKey)
 	if val == nil {

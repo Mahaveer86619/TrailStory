@@ -30,26 +30,45 @@ func main() {
 	userSvc := services.NewUserService(storageSvc)
 	userHandler := handlers.NewUserHandler(*userSvc)
 
+	journeySvc := services.NewJourneyService(storageSvc)
+	journeyHandler := handlers.NewJourneyHandler(journeySvc)
+
 	// 3. Routing
 	mux := http.NewServeMux()
 
-	// Public Routes
+	// --- Public Routes ---
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"status": "up"}`)
 	})
+
+	// Auth
 	mux.HandleFunc("POST /auth/register", userHandler.Register)
 	mux.HandleFunc("POST /auth/login", userHandler.Login)
 	mux.HandleFunc("POST /auth/refresh", userHandler.RefreshToken)
-	mux.HandleFunc("GET /users", userHandler.ListAll)
 
-	// Protected Routes (Wrapped in JWT Middleware)
+	// Public Data
+	mux.HandleFunc("GET /users", userHandler.ListAll)
+	mux.HandleFunc("GET /users/{id}/followers", userHandler.GetFollowers)
+	// Optional Auth
+	mux.HandleFunc("GET /journeys/{id}", middleware.OptionalAuth(journeyHandler.Get))
+	mux.HandleFunc("GET /feed", middleware.OptionalAuth(journeyHandler.ListPublic))
+
+	// --- Protected Routes ---
+
+	// User
 	mux.HandleFunc("GET /users/me", middleware.Middleware(userHandler.GetMe))
 	mux.HandleFunc("PATCH /users/me", middleware.Middleware(userHandler.UpdateMe))
 	mux.HandleFunc("POST /users/me/avatar", middleware.Middleware(userHandler.UploadAvatar))
 	mux.HandleFunc("POST /users/follow/{id}", middleware.Middleware(userHandler.Follow))
 	mux.HandleFunc("DELETE /users/unfollow/{id}", middleware.Middleware(userHandler.Unfollow))
-	mux.HandleFunc("GET /users/{id}/followers", userHandler.GetFollowers)
+
+	// Journey
+	mux.HandleFunc("POST /journeys", middleware.Middleware(journeyHandler.Create))
+	mux.HandleFunc("GET /journeys", middleware.Middleware(journeyHandler.ListMine))
+	mux.HandleFunc("DELETE /journeys/{id}", middleware.Middleware(journeyHandler.Delete))
+	mux.HandleFunc("POST /journeys/{id}/checkpoints", middleware.Middleware(journeyHandler.AddCheckpoint))
+	mux.HandleFunc("DELETE /checkpoints/{id}", middleware.Middleware(journeyHandler.DeleteCheckpoint))
 
 	// Static File Server (For Local Storage Driver)
 	if config.AppConfig.STORAGE_DRIVER == "local" {

@@ -132,7 +132,7 @@ func (h *UserHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) Follow(w http.ResponseWriter, r *http.Request) {
 	userID := middleware.GetUserID(r)
-	targetID := r.PathValue("id") // Or r.URL.Query().Get("id") depending on router
+	targetID := r.PathValue("id")
 
 	if err := h.Service.FollowUser(userID, targetID); err != nil {
 		errz.HandleErrors(w, err)
@@ -161,5 +161,11 @@ func (h *UserHandler) GetFollowers(w http.ResponseWriter, r *http.Request) {
 		errz.HandleErrors(w, err)
 		return
 	}
-	(&views.Success{StatusCode: 200, Data: followers}).JSON(w)
+
+	if len(followers) == 0 {
+		(&views.Success{StatusCode: 200, Data: []views.UserView{}, Message: "No followers found"}).JSON(w)
+		return
+	}
+	
+	(&views.Success{StatusCode: 200, Data: followers, Message: "Followers fetched"}).JSON(w)
 }
