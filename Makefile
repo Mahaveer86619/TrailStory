@@ -7,6 +7,10 @@ clean:
 	@echo "Cleaning localstack and uploaded media..."
 	docker run --rm -v $(PWD):/app -w /app alpine rm -rf localstack server/uploads
 
+down:
+	@echo "Stopping TrailStory..."
+	docker compose down
+
 # Standard build and start
 start:
 	@echo "Starting TrailStory..."
@@ -16,10 +20,7 @@ start:
 # Full reset: clean then start
 rebuild: clean start
 
-restart:
-	@echo "Restarting TrailStory..."
-	docker compose down
-	docker compose up --build -d
+restart: down start
 
 # Follow logs from the server container
 logs:
